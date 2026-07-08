@@ -4,6 +4,58 @@ An open-source MCP server for Odoo that connects through Odoo's External JSON-2 
 
 No Odoo addon installation is required. Provide your Odoo URL, database name, and API key, then expose safe MCP tools for reading and operating on Odoo models.
 
+## Installation
+
+`odoo-mcp` runs locally on the user's machine. MCP clients such as Claude Desktop or Cursor launch the server process automatically, so users do not need to manually keep a localhost server running.
+
+### Prerequisites
+
+- Python 3.10+
+- `pip`
+- An Odoo database with access to the External JSON-2 API
+- An Odoo API key
+
+### Install from source
+
+```bash
+git clone https://github.com/axelmanzanilla/odoo-mcp.git
+cd odoo-mcp
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .
+```
+
+On Windows, activate the virtual environment with:
+
+```powershell
+.venv\Scripts\activate
+```
+
+### MCP client configuration
+
+Point your MCP client to the `odoo-mcp` executable inside the virtual environment:
+
+```json
+{
+  "mcpServers": {
+    "odoo": {
+      "command": "/path/to/odoo-mcp/.venv/bin/odoo-mcp",
+      "env": {
+        "ODOO_URL": "https://example.odoo.com",
+        "ODOO_DB": "example",
+        "ODOO_API_KEY": "your-api-key"
+      }
+    }
+  }
+}
+```
+
+On Windows, use the virtual environment executable path:
+
+```json
+"command": "C:\\path\\to\\odoo-mcp\\.venv\\Scripts\\odoo-mcp.exe"
+```
+
 ## Compatibility
 
 `odoo-mcp` is planned for Odoo 19+ instances with access to the External JSON-2 API.
