@@ -64,9 +64,27 @@ Support for older Odoo versions may be added later through legacy RPC APIs.
 
 ## Planned Tools
 
-The initial goal is to provide generic MCP tools for common Odoo model operations:
+The initial implementation provides read-only tools:
 
-- Search and read records.
+- `odoo_context`: return the authenticated Odoo user's context, including `uid`.
+- `odoo_search_read`: call `search_read` on an Odoo model with a provided domain and field list.
+- `list_my_tasks`: list Project tasks assigned to the authenticated user with friendly display values.
+- `get_task`: read one Project task by ID with friendly display values.
+
+`list_my_tasks` follows Odoo's own My Tasks action domain:
+
+```python
+[
+    ("user_ids", "in", uid),
+    ("has_template_ancestor", "=", False),
+    ("has_project_template", "=", False),
+]
+```
+
+When calling Odoo through the external API, `uid` is resolved first through `res.users/context_get` and then sent as a numeric user ID.
+
+Future goals include additional generic MCP tools for common Odoo model operations:
+
 - Read specific records by ID.
 - Create records.
 - Update records.
