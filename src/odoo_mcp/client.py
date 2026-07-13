@@ -15,8 +15,18 @@ class OdooJson2Error(RuntimeError):
 
 
 class OdooJson2Client:
-    def __init__(self, config: OdooConfig) -> None:
+    def __init__(self, config: OdooConfig, http_client: httpx.Client | None = None) -> None:
         self.config = config
+        self._http = http_client or httpx.Client(timeout=config.timeout)
+
+    def close(self) -> None:
+        self._http.close()
+
+    def __enter__(self) -> OdooJson2Client:
+        return self
+
+    def __exit__(self, *exc_info: object) -> None:
+        self.close()
 
     def call(self, model: str, method: str, **kwargs: Any) -> Any:
         url = f"{self.config.url}/json/2/{model}/{method}"
@@ -27,8 +37,7 @@ class OdooJson2Client:
         }
 
         try:
-            with httpx.Client(timeout=self.config.timeout) as client:
-                response = client.post(url, headers=headers, json=kwargs)
+            response = self._http.post(url, headers=headers, json=kwargs)
         except httpx.HTTPError as exc:
             raise OdooJson2Error(f"Could not connect to Odoo: {exc}") from exc
 

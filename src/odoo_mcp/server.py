@@ -1,18 +1,20 @@
 from __future__ import annotations
 
+from functools import lru_cache
 from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 
+from . import tools
 from .client import OdooJson2Client
 from .config import OdooConfig
-from . import tools
-
 
 mcp = FastMCP("odoo-mcp")
 
 
+@lru_cache(maxsize=1)
 def get_client() -> OdooJson2Client:
+    """Return the shared Odoo client, creating it on first use."""
     return OdooJson2Client(OdooConfig.from_env())
 
 

@@ -62,9 +62,10 @@ Runtime dependencies are:
 - `httpx>=0.27,<1`
 - `mcp>=1.27,<2`
 
-Dev/test dependency:
+Dev/test dependencies:
 
 - `pytest>=8,<9`
+- `ruff>=0.8,<1` (lint and format; configured in `pyproject.toml`)
 
 ## Planned Tooling
 

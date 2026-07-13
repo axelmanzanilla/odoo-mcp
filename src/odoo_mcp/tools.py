@@ -5,7 +5,6 @@ from typing import Any
 
 from .client import OdooJson2Client, OdooJson2Error
 
-
 DEFAULT_LIMIT = 20
 DEFAULT_TASK_ORDER = "priority desc, sequence, date_deadline asc, id desc"
 DEFAULT_TASK_FIELDS = [

@@ -17,6 +17,22 @@ def test_config_from_env(monkeypatch: pytest.MonkeyPatch) -> None:
     assert config.api_key == "secret"
 
 
+def test_config_from_env_reads_optional_timeout(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("ODOO_URL", "https://example.odoo.com")
+    monkeypatch.setenv("ODOO_DB", "example")
+    monkeypatch.setenv("ODOO_API_KEY", "secret")
+
+    monkeypatch.delenv("ODOO_TIMEOUT", raising=False)
+    assert OdooConfig.from_env().timeout == 30.0
+
+    monkeypatch.setenv("ODOO_TIMEOUT", "5.5")
+    assert OdooConfig.from_env().timeout == 5.5
+
+    monkeypatch.setenv("ODOO_TIMEOUT", "not-a-number")
+    with pytest.raises(ValueError, match="ODOO_TIMEOUT"):
+        OdooConfig.from_env()
+
+
 def test_config_from_env_reports_missing_values(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.delenv("ODOO_URL", raising=False)
     monkeypatch.delenv("ODOO_DB", raising=False)
