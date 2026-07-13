@@ -122,6 +122,7 @@ The initial implementation provides read-only tools:
 - `odoo_search_read`: call `search_read` on an Odoo model with a provided domain and field list.
 - `list_my_tasks`: list Project tasks assigned to the authenticated user with friendly display values.
 - `get_task`: read one Project task by ID with friendly display values.
+- `list_record_messages`: list chatter messages posted on any record, given its model name and record ID (e.g. `project.task` + task ID). Returns newest first, with the HTML body also converted to plain text.
 
 `list_my_tasks` follows Odoo's own My Tasks action domain:
 

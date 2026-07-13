@@ -68,5 +68,28 @@ def get_task(task_id: int, fields: list[str] | None = None) -> dict[str, Any]:
     return tools.get_task(get_client(), task_id=task_id, fields=fields)
 
 
+@mcp.tool()
+def list_record_messages(
+    model: str,
+    record_id: int,
+    limit: int = tools.DEFAULT_LIMIT,
+    offset: int = 0,
+    order: str = tools.DEFAULT_MESSAGE_ORDER,
+    fields: list[str] | None = None,
+) -> list[dict[str, Any]]:
+    """List chatter messages (comments, emails, notifications) posted on one
+    Odoo record, given its model name (e.g. 'project.task') and record ID.
+    Newest messages first; each message includes a plain-text body_text."""
+    return tools.list_record_messages(
+        get_client(),
+        model=model,
+        record_id=record_id,
+        limit=limit,
+        offset=offset,
+        order=order,
+        fields=fields,
+    )
+
+
 def main() -> None:
     mcp.run(transport="stdio")

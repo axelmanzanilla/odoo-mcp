@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
+from html.parser import HTMLParser
 from typing import Any
 
 from .client import OdooJson2Client, OdooJson2Error
@@ -47,6 +48,17 @@ TASK_PRIORITY_LABELS = {
     "2": "High priority",
     "3": "Urgent",
 }
+DEFAULT_MESSAGE_ORDER = "date desc, id desc"
+DEFAULT_MESSAGE_FIELDS = [
+    "id",
+    "date",
+    "author_id",
+    "email_from",
+    "message_type",
+    "subtype_id",
+    "subject",
+    "body",
+]
 
 
 def odoo_context(client: OdooJson2Client) -> dict[str, Any]:
@@ -114,6 +126,66 @@ def get_task(
     if not records:
         raise OdooJson2Error(f"Task {task_id} was not found or is not accessible")
     return _format_task(records[0])
+
+
+def list_record_messages(
+    client: OdooJson2Client,
+    model: str,
+    record_id: int,
+    limit: int = DEFAULT_LIMIT,
+    offset: int = 0,
+    order: str = DEFAULT_MESSAGE_ORDER,
+    fields: Sequence[str] | None = None,
+) -> list[dict[str, Any]]:
+    records = client.search_read(
+        "mail.message",
+        [["model", "=", model], ["res_id", "=", record_id]],
+        fields or DEFAULT_MESSAGE_FIELDS,
+        limit=limit,
+        offset=offset,
+        order=order,
+    )
+    return [_format_message(record) for record in records]
+
+
+def _format_message(record: dict[str, Any]) -> dict[str, Any]:
+    formatted = dict(record)
+
+    for field in ("author_id", "subtype_id"):
+        if field in formatted:
+            formatted[f"{field}_display"] = _format_many2one(formatted[field])
+
+    body = formatted.get("body")
+    if isinstance(body, str):
+        formatted["body_text"] = _html_to_text(body)
+
+    return formatted
+
+
+class _HTMLTextExtractor(HTMLParser):
+    _BREAK_TAGS = {"br", "p", "div", "li", "tr", "table", "blockquote"}
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._chunks: list[str] = []
+
+    def handle_data(self, data: str) -> None:
+        self._chunks.append(data)
+
+    def handle_starttag(self, tag: str, attrs: list[tuple[str, str | None]]) -> None:
+        if tag in self._BREAK_TAGS:
+            self._chunks.append("\n")
+
+    def text(self) -> str:
+        return "".join(self._chunks)
+
+
+def _html_to_text(html_value: str) -> str:
+    parser = _HTMLTextExtractor()
+    parser.feed(html_value)
+    text = parser.text().replace("\xa0", " ")
+    lines = (line.strip() for line in text.splitlines())
+    return "\n".join(line for line in lines if line)
 
 
 def _format_task(record: dict[str, Any]) -> dict[str, Any]:
