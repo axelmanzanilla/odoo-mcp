@@ -40,6 +40,8 @@ Implemented read-only MCP tools:
 - `odoo_search_read`: generic wrapper around `<model>/search_read`.
 - `list_my_tasks`: lists `project.task` records assigned to the authenticated user with friendly display values.
 - `get_task`: reads one `project.task` by ID with friendly display values.
+- `list_my_worked_tasks`: lists tasks assigned to the authenticated user through chatter
+  tracking or carrying their timesheet entries during an inclusive date period.
 
 `list_my_tasks` first calls `res.users/context_get` to get the numeric `uid`, then calls `project.task/search_read` with:
 

@@ -68,5 +68,27 @@ def get_task(task_id: int, fields: list[str] | None = None) -> dict[str, Any]:
     return tools.get_task(get_client(), task_id=task_id, fields=fields)
 
 
+@mcp.tool()
+def list_my_worked_tasks(
+    start_date: str,
+    end_date: str,
+    limit: int = tools.DEFAULT_LIMIT,
+    offset: int = 0,
+) -> dict[str, Any]:
+    """List my assigned or timesheeted tasks in an inclusive YYYY-MM-DD period.
+
+    Convert natural periods such as "January 2024" or "last week" into start_date
+    and end_date before calling. Assignment dates use the Odoo user's timezone;
+    timesheets use their recorded work date.
+    """
+    return tools.list_my_worked_tasks(
+        get_client(),
+        start_date=start_date,
+        end_date=end_date,
+        limit=limit,
+        offset=offset,
+    )
+
+
 def main() -> None:
     mcp.run(transport="stdio")

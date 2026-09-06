@@ -122,6 +122,8 @@ The initial implementation provides read-only tools:
 - `odoo_search_read`: call `search_read` on an Odoo model with a provided domain and field list.
 - `list_my_tasks`: list Project tasks assigned to the authenticated user with friendly display values.
 - `get_task`: read one Project task by ID with friendly display values.
+- `list_my_worked_tasks`: list tasks assigned to the authenticated user or carrying their
+  timesheets during an inclusive date period.
 
 `list_my_tasks` follows Odoo's own My Tasks action domain:
 
@@ -134,6 +136,37 @@ The initial implementation provides read-only tools:
 ```
 
 When calling Odoo through the external API, `uid` is resolved first through `res.users/context_get` and then sent as a numeric user ID.
+
+### Worked tasks by period
+
+`list_my_worked_tasks` accepts inclusive `start_date` and `end_date` values in
+`YYYY-MM-DD` format. MCP clients should translate natural-language periods before
+calling it. For example, "my tasks from January 2024" becomes:
+
+```json
+{
+  "start_date": "2024-01-01",
+  "end_date": "2024-01-31"
+}
+```
+
+The result is the deduplicated union of:
+
+- tasks where the Assignees chatter tracking shows the current user being added during
+  the period; and
+- tasks with `account.analytic.line` timesheet entries for the current user whose work
+  date is in the period.
+
+Tasks are ordered by their latest matching activity date. Each task includes assignment
+events, timesheet entry count, total hours, timesheet dates, and the source or sources
+that caused it to match. Chatter datetime boundaries use the Odoo user's timezone;
+timesheets use their recorded work date.
+
+Odoo remains responsible for permissions. In stock Odoo 19, direct reads of historical
+`mail.tracking.value` records are restricted to system users. If the API user cannot
+read assignment history, the tool still returns available timesheet matches and reports
+`assignment_history: false` in `source_status` with a warning. Reading timesheet matches
+requires access to `account.analytic.line`.
 
 ### Planned tools
 
